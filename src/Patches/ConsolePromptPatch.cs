@@ -1,29 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using HarmonyLib;
-using CloverPit_CommandPromptWithArgs;
 
 namespace CloverPit_CommandPromptWithArgs.Patches;
 
 [HarmonyPatch(typeof(ConsolePrompt), "TryExecuteCommand")]
 class ConsolePromptPatch : HarmonyPatch
 {
-    static bool Prefix(ConsolePrompt __instance)
+    static bool Prefix(ConsolePrompt __instance, ref string ___inputString, ref string ___inputStringOld, ref int ___executionIndex)
     {
-        Type type = __instance.GetType();
-
-        FieldInfo inputStringField = AccessTools.Field(type, "inputString");
-        FieldInfo executionIndexField = AccessTools.Field(type, "executionIndex");
-
-        if (inputStringField == null || executionIndexField == null)
-        {
-            Plugin.Logger.LogError("I don't know why or how this happened but its bad.");
-            return false;
-        }
-
-        string inputString = (string)inputStringField.GetValue(__instance);
-        int executionIndex = (int)executionIndexField.GetValue(__instance);
+        string inputString = ___inputString;
+        int executionIndex = ___executionIndex;
 
         if (string.IsNullOrEmpty(inputString))
         {
@@ -33,7 +20,7 @@ class ConsolePromptPatch : HarmonyPatch
         if (inputString.Length == 0) return false;
 
         executionIndex++;
-        inputString = inputString.ToLowerInvariant  ();
+        inputString = inputString.ToLowerInvariant();
 
         string[] words = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         string command = words[0].Trim();
@@ -71,13 +58,13 @@ class ConsolePromptPatch : HarmonyPatch
         }
         else
         {
-            AccessTools.Field(type, "inputString").SetValue(__instance, command);
+            ___inputString = command;
             return true;
         }
 
-        AccessTools.Field(type, "inputStringOld").SetValue(__instance, inputString);
-        AccessTools.Field(type, "inputString").SetValue(__instance, "");
-        AccessTools.Field(type, "executionIndex").SetValue(__instance, executionIndex);
+        ___inputStringOld = inputString;
+        ___inputString = "";
+        ___executionIndex = executionIndex;
 
         return false;
     }
