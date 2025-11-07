@@ -31,11 +31,10 @@ class ConsolePromptPatch : HarmonyPatch
             args.AddRange(words[1..]);
         }
 
-        Plugin.Logger.LogInfo($"Command is : {command}");
-
         CustomCommands.CustomCommand commandObj = null;
 
         if (CustomCommands.availableCustomCommands.ContainsKey(command))
+            ConsolePrompt.Log($"Running command: {command}");
             commandObj = CustomCommands.availableCustomCommands[command];
 
         if (commandObj != null)
