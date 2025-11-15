@@ -31,34 +31,32 @@ class ConsolePromptPatch : HarmonyPatch
             args.AddRange(words[1..]);
         }
 
-        CustomCommands.CustomCommand commandObj = null;
+        CustomCommands.CustomCommand commandObj;
 
-        if (CustomCommands.availableCustomCommands.ContainsKey(command))
+        if (CustomCommands.availableCustomCommands.ContainsKey(command)) {
             ConsolePrompt.Log($"Running command: {command}");
             commandObj = CustomCommands.availableCustomCommands[command];
-
-        if (commandObj != null)
-        {
-            bool success = false;
-
-            try
-            {
-                success = commandObj.TryExecute(args.ToArray());
-            }
-            catch (Exception execption)
-            {
-                Plugin.Logger.LogError($"Failed to call TryExecute: {execption}");
-            }
-
-            if (!success)
-            {
-                Plugin.Logger.LogError($"Failed to run command {command}");
-            }
         }
         else
         {
             ___inputString = command;
             return true;
+        }
+
+        bool success = false;
+
+        try
+        {
+            success = commandObj.TryExecute(args.ToArray());
+        }
+        catch (Exception execption)
+        {
+            Plugin.Logger.LogError($"Failed to call TryExecute: {execption}");
+        }
+
+        if (!success)
+        {
+            Plugin.Logger.LogError($"Failed to run command {command}");
         }
 
         ___inputStringOld = inputString;
